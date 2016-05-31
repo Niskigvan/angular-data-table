@@ -2351,10 +2351,10 @@
 
               ctrl.adjustColumns();
             };
-
-            angular.element($window).bind('resize', throttle(function () {
+            var throttle_resize = throttle(function () {
               $timeout(resize);
-            }));
+            });
+            angular.element($window).on('resize', throttle_resize);
 
             var checkVisibility = function checkVisibility() {
               var bounds = $elm[0].getBoundingClientRect(),
@@ -2366,7 +2366,7 @@
             $elm.addClass('dt-loaded');
 
             $scope.$on('$destroy', function () {
-              angular.element($window).off('resize');
+              angular.element($window).off('resize', throttle_resize);
             });
           }
         };
