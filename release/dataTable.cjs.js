@@ -1358,13 +1358,14 @@ function HeaderCellDirective($compile) {
 
             cellScope.$header = ctrl.column.name;
             cellScope.$index = $scope.$index;
+            cellScope.$column = ctrl.column;
           }
 
           if (ctrl.column.headerTemplate) {
             var elm = angular.element("<span>" + ctrl.column.headerTemplate.trim() + "</span>");
             angular.element(label).append($compile(elm)(cellScope));
           } else if (ctrl.column.headerRenderer) {
-            var _elm = angular.element(ctrl.column.headerRenderer($elm));
+            var _elm = angular.element(ctrl.column.headerRenderer(cellScope, $elm));
             angular.element(label).append($compile(_elm)(cellScope)[0]);
           } else {
             var val = ctrl.column.name;
