@@ -37,6 +37,10 @@ export function CellDirective($rootScope, $compile, $log, $timeout){
     compile: function() {
       return {
         pre: function($scope, $elm, $attrs, ctrl) {
+          if(ctrl.column.cellPreCompile){
+            ctrl.column.cellPreCompile($scope, $elm, $attrs, ctrl)
+            return
+          }
           var content = angular.element($elm[0].querySelector('.dt-cell-content')), cellScope;
 
           // extend the outer scope onto our new cell scope
@@ -44,7 +48,7 @@ export function CellDirective($rootScope, $compile, $log, $timeout){
             cellScope = ctrl.options.$outer.$new(false);
             cellScope.getValue = ctrl.getValue;
           }
-
+          
           $scope.$watch('cell.row', () => {
             if(cellScope){
               cellScope.$cell = ctrl.value;
@@ -52,7 +56,7 @@ export function CellDirective($rootScope, $compile, $log, $timeout){
               cellScope.$column = ctrl.column;
               cellScope.$$watchers = null;
             }
-
+            
             if(ctrl.column.template){
               content.empty();
               var elm = angular.element(`<span>${ctrl.column.template.trim()}</span>`);

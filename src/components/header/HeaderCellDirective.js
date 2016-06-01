@@ -42,6 +42,10 @@ export function HeaderCellDirective($compile){
     compile: function() {
       return {
         pre: function($scope, $elm, $attrs, ctrl) {
+          if(ctrl.column.headerPreCompile){
+            ctrl.column.headerPreCompile($scope, $elm, $attrs, ctrl)
+            return;
+          }
           let label = $elm[0].querySelector('.dt-header-cell-label'), cellScope;
 
           if(ctrl.column.headerTemplate || ctrl.column.headerRenderer){
@@ -50,14 +54,12 @@ export function HeaderCellDirective($compile){
             // copy some props
             cellScope.$header = ctrl.column.name;
             cellScope.$index = $scope.$index;
-            cellScope.$column = ctrl.column;
           }
-
           if(ctrl.column.headerTemplate){
             let elm = angular.element(`<span>${ctrl.column.headerTemplate.trim()}</span>`);
             angular.element(label).append($compile(elm)(cellScope));
           } else if(ctrl.column.headerRenderer){
-            let elm = angular.element(ctrl.column.headerRenderer(cellScope,$elm));
+            let elm = angular.element(ctrl.column.headerRenderer($elm));
             angular.element(label).append($compile(elm)(cellScope)[0]);
           } else {
             let val = ctrl.column.name;

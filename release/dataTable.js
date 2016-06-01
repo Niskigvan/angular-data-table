@@ -349,6 +349,10 @@
       compile: function compile() {
         return {
           pre: function pre($scope, $elm, $attrs, ctrl) {
+            if (ctrl.column.cellPreCompile) {
+              ctrl.column.cellPreCompile($scope, $elm, $attrs, ctrl);
+              return;
+            }
             var content = angular.element($elm[0].querySelector('.dt-cell-content')),
                 cellScope;
 
@@ -1391,6 +1395,10 @@
       compile: function compile() {
         return {
           pre: function pre($scope, $elm, $attrs, ctrl) {
+            if (ctrl.column.headerPreCompile) {
+              ctrl.column.headerPreCompile($scope, $elm, $attrs, ctrl);
+              return;
+            }
             var label = $elm[0].querySelector('.dt-header-cell-label'),
                 cellScope = void 0;
 
@@ -1399,14 +1407,12 @@
 
               cellScope.$header = ctrl.column.name;
               cellScope.$index = $scope.$index;
-              cellScope.$column = ctrl.column;
             }
-
             if (ctrl.column.headerTemplate) {
               var elm = angular.element("<span>" + ctrl.column.headerTemplate.trim() + "</span>");
               angular.element(label).append($compile(elm)(cellScope));
             } else if (ctrl.column.headerRenderer) {
-              var _elm = angular.element(ctrl.column.headerRenderer(cellScope, $elm));
+              var _elm = angular.element(ctrl.column.headerRenderer($elm));
               angular.element(label).append($compile(_elm)(cellScope)[0]);
             } else {
               var val = ctrl.column.name;
