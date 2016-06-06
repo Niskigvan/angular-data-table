@@ -303,43 +303,30 @@ function CellDirective($rootScope, $compile, $log, $timeout) {
       onTreeToggle: '&',
       onCheckboxChange: '&'
     },
-    template: "<div class=\"dt-cell\"\n            data-title=\"{{::cell.column.name}}\"\n            ng-style=\"cell.styles()\"\n            ng-class=\"cell.cellClass()\">\n        <label ng-if=\"cell.column.isCheckboxColumn\" class=\"dt-checkbox\">\n          <input type=\"checkbox\"\n                 ng-checked=\"cell.selected\"\n                 ng-click=\"cell.onCheckboxChanged($event)\" />\n        </label>\n        <span ng-if=\"cell.column.isTreeColumn && cell.hasChildren\"\n              ng-class=\"cell.treeClass()\"\n              ng-click=\"cell.onTreeToggled($event)\"></span>\n        <span class=\"dt-cell-content\"></span>\n      </div>",
+    template: "<div class=\"dt-cell\"\n            data-title=\"{{::cell.column.name}}\"\n            ng-style=\"cell.styles()\"\n            ng-class=\"cell.cellClass()\">\n      </div>",
     replace: true,
     compile: function compile() {
       return {
         pre: function pre($scope, $elm, $attrs, ctrl) {
-          if (ctrl.column.cellPreCompile) {
-            ctrl.column.cellPreCompile($scope, $elm, $attrs, ctrl);
+          var cellHTML = "\n            <label ng-if=\"cell.column.isCheckboxColumn\" class=\"dt-checkbox\">\n              <input type=\"checkbox\"\n                     ng-checked=\"cell.selected\"\n                     ng-click=\"cell.onCheckboxChanged($event)\" />\n            </label>\n            <span ng-if=\"cell.column.isTreeColumn && cell.hasChildren\"\n                  ng-class=\"cell.treeClass()\"\n                  ng-click=\"cell.onTreeToggled($event)\"></span>\n            <span class=\"dt-cell-content\"></span>\n          ";
+          if (ctrl.column.cellPreLink) {
+            ctrl.column.cellPreLink($scope, $elm, $attrs, ctrl, cellHTML);
             return;
           }
-          var content = angular.element($elm[0].querySelector('.dt-cell-content')),
-              cellScope;
+          var $cellElm = angular.element(cellHTML);
 
-          if (ctrl.column.template || ctrl.column.cellRenderer) {
-            cellScope = ctrl.options.$outer.$new(false);
-            cellScope.getValue = ctrl.getValue;
+          var content = angular.element($cellElm[4]);
+          if (ctrl.column.template) {
+            content.empty();
+            var elm = angular.element("<span>" + ctrl.column.template.trim() + "</span>");
+            content.append(elm);
+          } else if (ctrl.column.cellRenderer) {
+            var elm = angular.element(ctrl.column.cellRenderer($scope, content));
+            content.append(elm);
+          } else {
+            content[0].innerHTML = "{{cell.value}}";
           }
-
-          $scope.$watch('cell.row', function () {
-            if (cellScope) {
-              cellScope.$cell = ctrl.value;
-              cellScope.$row = ctrl.row;
-              cellScope.$column = ctrl.column;
-              cellScope.$$watchers = null;
-            }
-
-            if (ctrl.column.template) {
-              content.empty();
-              var elm = angular.element("<span>" + ctrl.column.template.trim() + "</span>");
-              content.append($compile(elm)(cellScope));
-            } else if (ctrl.column.cellRenderer) {
-              content.empty();
-              var elm = angular.element(ctrl.column.cellRenderer(cellScope, content));
-              content.append($compile(elm)(cellScope));
-            } else {
-              content[0].innerHTML = ctrl.getValue();
-            }
-          }, true);
+          $elm.append($compile($cellElm)($scope));
         }
       };
     }
@@ -1350,34 +1337,28 @@ function HeaderCellDirective($compile) {
       selected: '='
     },
     replace: true,
-    template: "<div ng-class=\"hcell.cellClass()\"\n            class=\"dt-header-cell\"\n            draggable=\"true\"\n            data-id=\"{{column.$id}}\"\n            ng-style=\"hcell.styles()\"\n            title=\"{{::hcell.column.name}}\">\n        <div resizable=\"hcell.column.resizable\"\n             on-resize=\"hcell.onResized(width, hcell.column)\"\n             min-width=\"hcell.column.minWidth\"\n             max-width=\"hcell.column.maxWidth\">\n          <label ng-if=\"hcell.column.isCheckboxColumn && hcell.column.headerCheckbox\" class=\"dt-checkbox\">\n            <input type=\"checkbox\"\n                   ng-checked=\"hcell.selected\"\n                   ng-click=\"hcell.onCheckboxChange()\" />\n          </label>\n          <span class=\"dt-header-cell-label\"\n                ng-click=\"hcell.onSorted()\">\n          </span>\n          <span ng-class=\"hcell.sortClass()\"></span>\n        </div>\n      </div>",
+    template: "<div ng-class=\"hcell.cellClass()\"\n            class=\"dt-header-cell\"\n            draggable=\"true\"\n            data-id=\"{{column.$id}}\"\n            ng-style=\"hcell.styles()\"\n            title=\"{{::hcell.column.name}}\">\n      </div>",
     compile: function compile() {
       return {
         pre: function pre($scope, $elm, $attrs, ctrl) {
-          if (ctrl.column.headerPreCompile) {
-            ctrl.column.headerPreCompile($scope, $elm, $attrs, ctrl);
+          var cellHTML = "\n            <div resizable=\"hcell.column.resizable\"\n               on-resize=\"hcell.onResized(width, hcell.column)\"\n               min-width=\"hcell.column.minWidth\"\n               max-width=\"hcell.column.maxWidth\">\n              <label ng-if=\"hcell.column.isCheckboxColumn && hcell.column.headerCheckbox\" class=\"dt-checkbox\">\n                <input type=\"checkbox\"\n                       ng-checked=\"hcell.selected\"\n                       ng-click=\"hcell.onCheckboxChange()\" />\n              </label>\n              <span class=\"dt-header-cell-label\"\n                    ng-click=\"hcell.onSorted()\">\n              </span>\n              <span ng-class=\"hcell.sortClass()\"></span>\n            </div>\n          ";
+          if (ctrl.column.headerPreLink) {
+            ctrl.column.headerPreLink($scope, $elm, $attrs, ctrl);
             return;
           }
-          var label = $elm[0].querySelector('.dt-header-cell-label'),
-              cellScope = void 0;
+          var $cellElm = angular.element(cellHTML);
+          var label = $cellElm[0].querySelector('.dt-header-cell-label');
 
-          if (ctrl.column.headerTemplate || ctrl.column.headerRenderer) {
-            cellScope = ctrl.options.$outer.$new(false);
-
-            cellScope.$header = ctrl.column.name;
-            cellScope.$index = $scope.$index;
-          }
           if (ctrl.column.headerTemplate) {
             var elm = angular.element("<span>" + ctrl.column.headerTemplate.trim() + "</span>");
-            angular.element(label).append($compile(elm)(cellScope));
+            angular.element(label).append(elm);
           } else if (ctrl.column.headerRenderer) {
             var _elm = angular.element(ctrl.column.headerRenderer($elm));
-            angular.element(label).append($compile(_elm)(cellScope)[0]);
+            angular.element(label).append(_elm);
           } else {
-            var val = ctrl.column.name;
-            if (val === undefined || val === null) val = '';
-            label.textContent = val;
+            label.innerHTML = "{{ hcell.column.name }}";
           }
+          $elm.append($compile($cellElm)($scope));
         }
       };
     }

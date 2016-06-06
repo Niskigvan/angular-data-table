@@ -23,52 +23,40 @@ export function CellDirective($rootScope, $compile, $log, $timeout){
             data-title="{{::cell.column.name}}"
             ng-style="cell.styles()"
             ng-class="cell.cellClass()">
-        <label ng-if="cell.column.isCheckboxColumn" class="dt-checkbox">
-          <input type="checkbox"
-                 ng-checked="cell.selected"
-                 ng-click="cell.onCheckboxChanged($event)" />
-        </label>
-        <span ng-if="cell.column.isTreeColumn && cell.hasChildren"
-              ng-class="cell.treeClass()"
-              ng-click="cell.onTreeToggled($event)"></span>
-        <span class="dt-cell-content"></span>
       </div>`,
     replace: true,
     compile: function() {
       return {
         pre: function($scope, $elm, $attrs, ctrl) {
-          if(ctrl.column.cellPreCompile){
-            ctrl.column.cellPreCompile($scope, $elm, $attrs, ctrl)
+          var cellHTML=`
+            <label ng-if="cell.column.isCheckboxColumn" class="dt-checkbox">
+              <input type="checkbox"
+                     ng-checked="cell.selected"
+                     ng-click="cell.onCheckboxChanged($event)" />
+            </label>
+            <span ng-if="cell.column.isTreeColumn && cell.hasChildren"
+                  ng-class="cell.treeClass()"
+                  ng-click="cell.onTreeToggled($event)"></span>
+            <span class="dt-cell-content"></span>
+          `
+          if(ctrl.column.cellPreLink){
+            ctrl.column.cellPreLink($scope, $elm, $attrs, ctrl,cellHTML)
             return
           }
-          var content = angular.element($elm[0].querySelector('.dt-cell-content')), cellScope;
-
-          // extend the outer scope onto our new cell scope
-          if(ctrl.column.template || ctrl.column.cellRenderer){
-            cellScope = ctrl.options.$outer.$new(false);
-            cellScope.getValue = ctrl.getValue;
-          }
+          var $cellElm=angular.element(cellHTML)
           
-          $scope.$watch('cell.row', () => {
-            if(cellScope){
-              cellScope.$cell = ctrl.value;
-              cellScope.$row = ctrl.row;
-              cellScope.$column = ctrl.column;
-              cellScope.$$watchers = null;
-            }
-            
-            if(ctrl.column.template){
-              content.empty();
-              var elm = angular.element(`<span>${ctrl.column.template.trim()}</span>`);
-              content.append($compile(elm)(cellScope));
-            } else if(ctrl.column.cellRenderer){
-              content.empty();
-              var elm = angular.element(ctrl.column.cellRenderer(cellScope, content));
-              content.append($compile(elm)(cellScope));
-            } else {
-              content[0].innerHTML = ctrl.getValue();
-            }
-          }, true);
+          var content = angular.element($cellElm[4]);
+          if(ctrl.column.template){
+            content.empty();
+            var elm = angular.element(`<span>${ctrl.column.template.trim()}</span>`);
+            content.append(elm);
+          } else if(ctrl.column.cellRenderer){
+            var elm = angular.element(ctrl.column.cellRenderer($scope, content));
+            content.append(elm);
+          } else {
+            content[0].innerHTML = "{{cell.value}}";
+          }
+          $elm.append($compile($cellElm)($scope));
         }
       }
     }
