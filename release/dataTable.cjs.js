@@ -1343,7 +1343,7 @@ function HeaderCellDirective($compile) {
         pre: function pre($scope, $elm, $attrs, ctrl) {
           var cellHTML = "\n            <div resizable=\"hcell.column.resizable\"\n               on-resize=\"hcell.onResized(width, hcell.column)\"\n               min-width=\"hcell.column.minWidth\"\n               max-width=\"hcell.column.maxWidth\">\n              <label ng-if=\"hcell.column.isCheckboxColumn && hcell.column.headerCheckbox\" class=\"dt-checkbox\">\n                <input type=\"checkbox\"\n                       ng-checked=\"hcell.selected\"\n                       ng-click=\"hcell.onCheckboxChange()\" />\n              </label>\n              <span class=\"dt-header-cell-label\"\n                    ng-click=\"hcell.onSorted()\">\n              </span>\n              <span ng-class=\"hcell.sortClass()\"></span>\n            </div>\n          ";
           if (ctrl.column.headerPreLink) {
-            ctrl.column.headerPreLink($scope, $elm, $attrs, ctrl);
+            ctrl.column.headerPreLink($scope, $elm, $attrs, ctrl, cellHTML);
             return;
           }
           var $cellElm = angular.element(cellHTML);

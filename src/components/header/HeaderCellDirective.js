@@ -45,7 +45,7 @@ export function HeaderCellDirective($compile){
             </div>
           `
           if(ctrl.column.headerPreLink){
-            ctrl.column.headerPreLink($scope, $elm, $attrs, ctrl)
+            ctrl.column.headerPreLink($scope, $elm, $attrs, ctrl,cellHTML)
             return;
           }
           var $cellElm=angular.element(cellHTML)
