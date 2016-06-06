@@ -55,7 +55,7 @@ export function HeaderCellDirective($compile){
             let elm = angular.element(`<span>${ctrl.column.headerTemplate.trim()}</span>`);
             angular.element(label).append(elm);
           } else if(ctrl.column.headerRenderer){
-            let elm = angular.element(ctrl.column.headerRenderer($elm));
+            let elm = angular.element(ctrl.column.headerRenderer($scope,label));
             angular.element(label).append(elm);
           } else {
             label.innerHTML = "{{ hcell.column.name }}";
