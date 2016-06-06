@@ -386,7 +386,7 @@ function CellDirective($rootScope, $compile, $log, $timeout){
             return
           }
           var $cellElm=angular.element(cellHTML)
-          
+          $elm.append($cellElm);
           var content = angular.element($cellElm[4]);
           if(ctrl.column.template){
             content.empty();
@@ -398,7 +398,7 @@ function CellDirective($rootScope, $compile, $log, $timeout){
           } else {
             content[0].innerHTML = "{{cell.value}}";
           }
-          $elm.append($compile($cellElm)($scope));
+          $compile($cellElm)($scope);
         }
       }
     }
@@ -1700,6 +1700,7 @@ function HeaderCellDirective($compile){
             return;
           }
           var $cellElm=angular.element(cellHTML)
+          $elm.append($cellElm);
           let label = $cellElm[0].querySelector('.dt-header-cell-label');
 
           if(ctrl.column.headerTemplate){
@@ -1711,7 +1712,7 @@ function HeaderCellDirective($compile){
           } else {
             label.innerHTML = "{{ hcell.column.name }}";
           }
-          $elm.append($compile($cellElm)($scope));
+          $compile($cellElm)($scope);
         }
       }
     }

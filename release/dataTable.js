@@ -355,7 +355,7 @@
               return;
             }
             var $cellElm = angular.element(cellHTML);
-
+            $elm.append($cellElm);
             var content = angular.element($cellElm[4]);
             if (ctrl.column.template) {
               content.empty();
@@ -367,7 +367,7 @@
             } else {
               content[0].innerHTML = "{{cell.value}}";
             }
-            $elm.append($compile($cellElm)($scope));
+            $compile($cellElm)($scope);
           }
         };
       }
@@ -1388,6 +1388,7 @@
               return;
             }
             var $cellElm = angular.element(cellHTML);
+            $elm.append($cellElm);
             var label = $cellElm[0].querySelector('.dt-header-cell-label');
 
             if (ctrl.column.headerTemplate) {
@@ -1399,7 +1400,7 @@
             } else {
               label.innerHTML = "{{ hcell.column.name }}";
             }
-            $elm.append($compile($cellElm)($scope));
+            $compile($cellElm)($scope);
           }
         };
       }

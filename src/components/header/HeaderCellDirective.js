@@ -49,6 +49,7 @@ export function HeaderCellDirective($compile){
             return;
           }
           var $cellElm=angular.element(cellHTML)
+          $elm.append($cellElm);
           let label = $cellElm[0].querySelector('.dt-header-cell-label');
 
           if(ctrl.column.headerTemplate){
@@ -60,7 +61,7 @@ export function HeaderCellDirective($compile){
           } else {
             label.innerHTML = "{{ hcell.column.name }}";
           }
-          $elm.append($compile($cellElm)($scope));
+          $compile($cellElm)($scope);
         }
       }
     }

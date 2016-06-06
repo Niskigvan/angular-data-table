@@ -44,7 +44,7 @@ export function CellDirective($rootScope, $compile, $log, $timeout){
             return
           }
           var $cellElm=angular.element(cellHTML)
-          
+          $elm.append($cellElm);
           var content = angular.element($cellElm[4]);
           if(ctrl.column.template){
             content.empty();
@@ -56,7 +56,7 @@ export function CellDirective($rootScope, $compile, $log, $timeout){
           } else {
             content[0].innerHTML = "{{cell.value}}";
           }
-          $elm.append($compile($cellElm)($scope));
+          $compile($cellElm)($scope);
         }
       }
     }
