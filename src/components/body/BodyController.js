@@ -172,6 +172,7 @@ export class BodyController{
 
     for(var i = 0, len = this.rows.length; i < len; i++) {
       var row = this.rows[i];
+      if(!row)continue
       // build groups
       var relVal = row[parentProp];
       if(relVal){
@@ -191,6 +192,7 @@ export class BodyController{
           row.$$depth = 0;
         } else {
           var parent = this.index[row[parentProp]];
+          if(!parent)continue;
           row.$$depth = parent.$$depth + 1;
           if (parent.$$children){
             parent.$$children.push(row[prop]);
@@ -252,8 +254,9 @@ export class BodyController{
         temp = [];
 
     for(var i = 0, len = this.rows.length; i < len; i++) {
-      var row = this.rows[i],
-          relVal = row[this.treeColumn.relationProp],
+      var row = this.rows[i];
+      if(!row)continue
+      var relVal = row[this.treeColumn.relationProp],
           keyVal = row[this.treeColumn.prop],
           rows = this.rowsByGroup[keyVal],
           expanded = this.expanded[keyVal];

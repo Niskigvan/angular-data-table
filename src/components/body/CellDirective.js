@@ -39,22 +39,18 @@ export function CellDirective($rootScope, $compile, $log, $timeout){
                   ng-click="cell.onTreeToggled($event)"></span>
             <span class="dt-cell-content"></span>
           `
-          if(ctrl.column.cellPreLink){
-            ctrl.column.cellPreLink($scope, $elm, $attrs, ctrl,cellHTML)
-            return
-          }
           var $cellElm=angular.element(cellHTML)
           $elm.append($cellElm);
-          var content = angular.element($cellElm[4]);
+          var content = $elm.find(".dt-cell-content");
           if(ctrl.column.template){
             content.empty();
-            var elm = angular.element(`<span>${ctrl.column.template.trim()}</span>`);
+            let elm = angular.element(`<span>${ctrl.column.template.trim()}</span>`);
             content.append(elm);
           } else if(ctrl.column.cellRenderer){
-            var elm = angular.element(ctrl.column.cellRenderer($scope, content));
-            content.append(elm);
+            let elm = angular.element(ctrl.column.cellRenderer($scope, $elm, $attrs, ctrl,content));
+            if(elm)content.append(elm);
           } else {
-            content[0].innerHTML = "{{cell.value}}";
+            content.html("{{cell.value}}");
           }
           $compile($cellElm)($scope);
         }

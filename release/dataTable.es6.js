@@ -381,22 +381,18 @@ function CellDirective($rootScope, $compile, $log, $timeout){
                   ng-click="cell.onTreeToggled($event)"></span>
             <span class="dt-cell-content"></span>
           `
-          if(ctrl.column.cellPreLink){
-            ctrl.column.cellPreLink($scope, $elm, $attrs, ctrl,cellHTML)
-            return
-          }
           var $cellElm=angular.element(cellHTML)
           $elm.append($cellElm);
-          var content = angular.element($cellElm[4]);
+          var content = $elm.find(".dt-cell-content");
           if(ctrl.column.template){
             content.empty();
-            var elm = angular.element(`<span>${ctrl.column.template.trim()}</span>`);
+            let elm = angular.element(`<span>${ctrl.column.template.trim()}</span>`);
             content.append(elm);
           } else if(ctrl.column.cellRenderer){
-            var elm = angular.element(ctrl.column.cellRenderer($scope, content));
-            content.append(elm);
+            let elm = angular.element(ctrl.column.cellRenderer($scope, $elm, $attrs, ctrl,content));
+            if(elm)content.append(elm);
           } else {
-            content[0].innerHTML = "{{cell.value}}";
+            content.html("{{cell.value}}");
           }
           $compile($cellElm)($scope);
         }
@@ -1179,6 +1175,7 @@ class BodyController{
 
     for(var i = 0, len = this.rows.length; i < len; i++) {
       var row = this.rows[i];
+      if(!row)continue
       // build groups
       var relVal = row[parentProp];
       if(relVal){
@@ -1198,6 +1195,7 @@ class BodyController{
           row.$$depth = 0;
         } else {
           var parent = this.index[row[parentProp]];
+          if(!parent)continue;
           row.$$depth = parent.$$depth + 1;
           if (parent.$$children){
             parent.$$children.push(row[prop]);
@@ -1259,8 +1257,9 @@ class BodyController{
         temp = [];
 
     for(var i = 0, len = this.rows.length; i < len; i++) {
-      var row = this.rows[i],
-          relVal = row[this.treeColumn.relationProp],
+      var row = this.rows[i];
+      if(!row)continue
+      var relVal = row[this.treeColumn.relationProp],
           keyVal = row[this.treeColumn.prop],
           rows = this.rowsByGroup[keyVal],
           expanded = this.expanded[keyVal];
@@ -1695,22 +1694,18 @@ function HeaderCellDirective($compile){
               <span ng-class="hcell.sortClass()"></span>
             </div>
           `
-          if(ctrl.column.headerPreLink){
-            ctrl.column.headerPreLink($scope, $elm, $attrs, ctrl,cellHTML)
-            return;
-          }
           var $cellElm=angular.element(cellHTML)
           $elm.append($cellElm);
-          let label = $cellElm[0].querySelector('.dt-header-cell-label');
+          var label = $elm.find('.dt-header-cell-label');
 
           if(ctrl.column.headerTemplate){
             let elm = angular.element(`<span>${ctrl.column.headerTemplate.trim()}</span>`);
-            angular.element(label).append(elm);
+            label.append(elm);
           } else if(ctrl.column.headerRenderer){
-            let elm = angular.element(ctrl.column.headerRenderer($scope,label));
-            angular.element(label).append(elm);
+            let elm = angular.element(ctrl.column.headerRenderer($scope, $elm, $attrs, ctrl,label));
+            if(elm) label.append(elm);
           } else {
-            label.innerHTML = "{{ hcell.column.name }}";
+            label.html("{{ hcell.column.name }}");
           }
           $compile($cellElm)($scope);
         }

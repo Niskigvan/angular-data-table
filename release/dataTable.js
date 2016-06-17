@@ -350,22 +350,18 @@
         return {
           pre: function pre($scope, $elm, $attrs, ctrl) {
             var cellHTML = "\n            <label ng-if=\"cell.column.isCheckboxColumn\" class=\"dt-checkbox\">\n              <input type=\"checkbox\"\n                     ng-checked=\"cell.selected\"\n                     ng-click=\"cell.onCheckboxChanged($event)\" />\n            </label>\n            <span ng-if=\"cell.column.isTreeColumn && cell.hasChildren\"\n                  ng-class=\"cell.treeClass()\"\n                  ng-click=\"cell.onTreeToggled($event)\"></span>\n            <span class=\"dt-cell-content\"></span>\n          ";
-            if (ctrl.column.cellPreLink) {
-              ctrl.column.cellPreLink($scope, $elm, $attrs, ctrl, cellHTML);
-              return;
-            }
             var $cellElm = angular.element(cellHTML);
             $elm.append($cellElm);
-            var content = angular.element($cellElm[4]);
+            var content = $elm.find(".dt-cell-content");
             if (ctrl.column.template) {
               content.empty();
               var elm = angular.element("<span>" + ctrl.column.template.trim() + "</span>");
               content.append(elm);
             } else if (ctrl.column.cellRenderer) {
-              var elm = angular.element(ctrl.column.cellRenderer($scope, content));
-              content.append(elm);
+              var _elm = angular.element(ctrl.column.cellRenderer($scope, $elm, $attrs, ctrl, content));
+              if (_elm) content.append(_elm);
             } else {
-              content[0].innerHTML = "{{cell.value}}";
+              content.html("{{cell.value}}");
             }
             $compile($cellElm)($scope);
           }
@@ -989,6 +985,7 @@
 
         for (var i = 0, len = this.rows.length; i < len; i++) {
           var row = this.rows[i];
+          if (!row) continue;
 
           var relVal = row[parentProp];
           if (relVal) {
@@ -1007,6 +1004,7 @@
               row.$$depth = 0;
             } else {
               var parent = this.index[row[parentProp]];
+              if (!parent) continue;
               row.$$depth = parent.$$depth + 1;
               if (parent.$$children) {
                 parent.$$children.push(row[prop]);
@@ -1059,8 +1057,9 @@
             temp = [];
 
         for (var i = 0, len = this.rows.length; i < len; i++) {
-          var row = this.rows[i],
-              relVal = row[this.treeColumn.relationProp],
+          var row = this.rows[i];
+          if (!row) continue;
+          var relVal = row[this.treeColumn.relationProp],
               keyVal = row[this.treeColumn.prop],
               rows = this.rowsByGroup[keyVal],
               expanded = this.expanded[keyVal];
@@ -1383,22 +1382,18 @@
         return {
           pre: function pre($scope, $elm, $attrs, ctrl) {
             var cellHTML = "\n            <div resizable=\"hcell.column.resizable\"\n               on-resize=\"hcell.onResized(width, hcell.column)\"\n               min-width=\"hcell.column.minWidth\"\n               max-width=\"hcell.column.maxWidth\">\n              <label ng-if=\"hcell.column.isCheckboxColumn && hcell.column.headerCheckbox\" class=\"dt-checkbox\">\n                <input type=\"checkbox\"\n                       ng-checked=\"hcell.selected\"\n                       ng-click=\"hcell.onCheckboxChange()\" />\n              </label>\n              <span class=\"dt-header-cell-label\"\n                    ng-click=\"hcell.onSorted()\">\n              </span>\n              <span ng-class=\"hcell.sortClass()\"></span>\n            </div>\n          ";
-            if (ctrl.column.headerPreLink) {
-              ctrl.column.headerPreLink($scope, $elm, $attrs, ctrl, cellHTML);
-              return;
-            }
             var $cellElm = angular.element(cellHTML);
             $elm.append($cellElm);
-            var label = $cellElm[0].querySelector('.dt-header-cell-label');
+            var label = $elm.find('.dt-header-cell-label');
 
             if (ctrl.column.headerTemplate) {
               var elm = angular.element("<span>" + ctrl.column.headerTemplate.trim() + "</span>");
-              angular.element(label).append(elm);
+              label.append(elm);
             } else if (ctrl.column.headerRenderer) {
-              var _elm = angular.element(ctrl.column.headerRenderer($scope, label));
-              angular.element(label).append(_elm);
+              var _elm2 = angular.element(ctrl.column.headerRenderer($scope, $elm, $attrs, ctrl, label));
+              if (_elm2) label.append(_elm2);
             } else {
-              label.innerHTML = "{{ hcell.column.name }}";
+              label.html("{{ hcell.column.name }}");
             }
             $compile($cellElm)($scope);
           }

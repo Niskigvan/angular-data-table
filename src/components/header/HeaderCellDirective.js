@@ -44,22 +44,18 @@ export function HeaderCellDirective($compile){
               <span ng-class="hcell.sortClass()"></span>
             </div>
           `
-          if(ctrl.column.headerPreLink){
-            ctrl.column.headerPreLink($scope, $elm, $attrs, ctrl,cellHTML)
-            return;
-          }
           var $cellElm=angular.element(cellHTML)
           $elm.append($cellElm);
-          let label = $cellElm[0].querySelector('.dt-header-cell-label');
+          var label = $elm.find('.dt-header-cell-label');
 
           if(ctrl.column.headerTemplate){
             let elm = angular.element(`<span>${ctrl.column.headerTemplate.trim()}</span>`);
-            angular.element(label).append(elm);
+            label.append(elm);
           } else if(ctrl.column.headerRenderer){
-            let elm = angular.element(ctrl.column.headerRenderer($scope,label));
-            angular.element(label).append(elm);
+            let elm = angular.element(ctrl.column.headerRenderer($scope, $elm, $attrs, ctrl,label));
+            if(elm) label.append(elm);
           } else {
-            label.innerHTML = "{{ hcell.column.name }}";
+            label.html("{{ hcell.column.name }}");
           }
           $compile($cellElm)($scope);
         }
