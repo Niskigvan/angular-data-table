@@ -5,10 +5,12 @@ export class CellController {
    * @return {styles object}
    */
   styles(){
-    return {
+    var style = this.column.cellStyleGetter ?
+         this.column.cellStyleGetter(this) :{}
+    return angular.extend(style,{
       width: this.column.width  + 'px',
-	  'min-width': this.column.width + 'px'
-    };
+	    'min-width': this.column.width + 'px'
+    });
   }
 
   /**
@@ -71,7 +73,7 @@ export class CellController {
    */
   getValue(){
     var val = this.column.cellDataGetter ?
-      this.column.cellDataGetter(this.value) : this.value;
+      this.column.cellDataGetter(this) : this.value;
 
     if(val === undefined || val === null) val = '';
     return val;

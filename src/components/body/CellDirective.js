@@ -52,7 +52,7 @@ export function CellDirective($rootScope, $compile, $log, $timeout){
           } else {
             content.html("{{cell.value}}");
           }
-          $compile($cellElm)($scope);
+          $compile($elm.children())($scope);
         }
       }
     }

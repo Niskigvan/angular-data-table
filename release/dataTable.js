@@ -27,6 +27,7 @@
   BodyDirective.$inject = ["$timeout"];
   ScrollerDirective.$inject = ["$timeout", "$rootScope"];
   CellDirective.$inject = ["$rootScope", "$compile", "$log", "$timeout"];
+  FooterDirective.$inject = ["$compile"];
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
@@ -245,7 +246,7 @@
     return FooterController;
   }();
 
-  function FooterDirective() {
+  function FooterDirective($compile) {
     return {
       restrict: 'E',
       controller: FooterController,
@@ -255,8 +256,27 @@
         paging: '=',
         onPage: '&'
       },
-      template: "<div class=\"dt-footer\">\n        <div class=\"page-count\">{{footer.paging.count}} total</div>\n        <dt-pager page=\"footer.page\"\n               size=\"footer.paging.size\"\n               count=\"footer.paging.count\"\n               on-page=\"footer.onPaged(page)\"\n               ng-show=\"footer.paging.count / footer.paging.size > 1\">\n         </dt-pager>\n      </div>",
-      replace: true
+      template: "<div class=\"dt-footer\">\n        \n      </div>",
+      replace: true,
+      compile: function compile() {
+        return {
+          pre: function pre($scope, $elm, $attrs, ctrl) {
+            var footerHTML = "\n            <div class=\"page-count\"></div>\n            <dt-pager page=\"footer.page\"\n                   size=\"footer.paging.size\"\n                   count=\"footer.paging.count\"\n                   on-page=\"footer.onPaged(page)\"\n                   ng-show=\"footer.paging.count / footer.paging.size > 1\">\n            </dt-pager>\n          ";
+            var $footerElm = angular.element(footerHTML);
+            $elm.append($footerElm);
+            var total = $elm.find(".page-count");
+            if (ctrl.paging.totalTemplate) {
+              total.html("" + ctrl.paging.totalTemplate.trim());
+            } else if (ctrl.footerRenderer) {
+              var elm = angular.element(ctrl.footerRenderer($scope, $elm, $attrs, ctrl, total));
+              if (elm) total.append(elm);
+            } else {
+              total.html("{{footer.paging.count}} total");
+            }
+            $compile($elm.children())($scope);
+          }
+        };
+      }
     };
   }
 
@@ -268,10 +288,11 @@
     _createClass(CellController, [{
       key: "styles",
       value: function styles() {
-        return {
+        var style = this.column.cellStyleGetter ? this.column.cellStyleGetter(this) : {};
+        return angular.extend(style, {
           width: this.column.width + 'px',
           'min-width': this.column.width + 'px'
-        };
+        });
       }
     }, {
       key: "cellClass",
@@ -317,7 +338,7 @@
     }, {
       key: "getValue",
       value: function getValue() {
-        var val = this.column.cellDataGetter ? this.column.cellDataGetter(this.value) : this.value;
+        var val = this.column.cellDataGetter ? this.column.cellDataGetter(this) : this.value;
 
         if (val === undefined || val === null) val = '';
         return val;
@@ -363,7 +384,7 @@
             } else {
               content.html("{{cell.value}}");
             }
-            $compile($cellElm)($scope);
+            $compile($elm.children())($scope);
           }
         };
       }
@@ -489,6 +510,7 @@
     if (split.length) {
       for (var i = 0, len = split.length; i < len; i++) {
         current = current[split[i]];
+        if (angular.isArray(current) && current.length) current = current[0];
       }
     }
 
@@ -1395,7 +1417,7 @@
             } else {
               label.html("{{ hcell.column.name }}");
             }
-            $compile($cellElm)($scope);
+            $compile($elm.children())($scope);
           }
         };
       }

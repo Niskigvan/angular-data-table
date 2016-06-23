@@ -77,7 +77,9 @@ export function DeepValueGetter(obj, path) {
 
   if(split.length){
     for(var i=0, len=split.length; i < len; i++) {
-      current = current[split[i]]; 
+      current = current[split[i]];
+      if(angular.isArray(current) && current.length)
+        current=current[0]
     }
   }
   

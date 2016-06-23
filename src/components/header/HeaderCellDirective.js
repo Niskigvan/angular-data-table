@@ -44,7 +44,7 @@ export function HeaderCellDirective($compile){
               <span ng-class="hcell.sortClass()"></span>
             </div>
           `
-          var $cellElm=angular.element(cellHTML)
+          var $cellElm=angular.element(cellHTML);
           $elm.append($cellElm);
           var label = $elm.find('.dt-header-cell-label');
 
@@ -57,7 +57,7 @@ export function HeaderCellDirective($compile){
           } else {
             label.html("{{ hcell.column.name }}");
           }
-          $compile($cellElm)($scope);
+          $compile($elm.children())($scope);
         }
       }
     }

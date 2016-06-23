@@ -238,7 +238,7 @@ class FooterController {
 
 }
 
-function FooterDirective(){
+function FooterDirective($compile){
   return {
     restrict: 'E',
     controller: FooterController,
@@ -250,15 +250,36 @@ function FooterDirective(){
     },
     template:
       `<div class="dt-footer">
-        <div class="page-count">{{footer.paging.count}} total</div>
-        <dt-pager page="footer.page"
-               size="footer.paging.size"
-               count="footer.paging.count"
-               on-page="footer.onPaged(page)"
-               ng-show="footer.paging.count / footer.paging.size > 1">
-         </dt-pager>
+        
       </div>`,
-    replace: true
+    replace: true,
+    compile: function() {
+      return {
+        pre: function($scope, $elm, $attrs, ctrl) {
+          var footerHTML=`
+            <div class="page-count"></div>
+            <dt-pager page="footer.page"
+                   size="footer.paging.size"
+                   count="footer.paging.count"
+                   on-page="footer.onPaged(page)"
+                   ng-show="footer.paging.count / footer.paging.size > 1">
+            </dt-pager>
+          `;
+          var $footerElm=angular.element(footerHTML);
+          $elm.append($footerElm);
+          var total=$elm.find(".page-count");
+          if(ctrl.paging.totalTemplate){
+            total.html(`${ctrl.paging.totalTemplate.trim()}`);
+          }else if(ctrl.footerRenderer){
+            let elm = angular.element(ctrl.footerRenderer($scope, $elm, $attrs, ctrl,total));
+            if(elm)total.append(elm);
+          }else{
+            total.html(`{{footer.paging.count}} total`)
+          }
+          $compile($elm.children())($scope);
+        }
+      }
+    }
   };
 }
 
@@ -269,10 +290,12 @@ class CellController {
    * @return {styles object}
    */
   styles(){
-    return {
+    var style = this.column.cellStyleGetter ?
+         this.column.cellStyleGetter(this) :{}
+    return angular.extend(style,{
       width: this.column.width  + 'px',
-	  'min-width': this.column.width + 'px'
-    };
+	    'min-width': this.column.width + 'px'
+    });
   }
 
   /**
@@ -335,7 +358,7 @@ class CellController {
    */
   getValue(){
     var val = this.column.cellDataGetter ?
-      this.column.cellDataGetter(this.value) : this.value;
+      this.column.cellDataGetter(this) : this.value;
 
     if(val === undefined || val === null) val = '';
     return val;
@@ -394,7 +417,7 @@ function CellDirective($rootScope, $compile, $log, $timeout){
           } else {
             content.html("{{cell.value}}");
           }
-          $compile($cellElm)($scope);
+          $compile($elm.children())($scope);
         }
       }
     }
@@ -549,7 +572,9 @@ function DeepValueGetter(obj, path) {
 
   if(split.length){
     for(var i=0, len=split.length; i < len; i++) {
-      current = current[split[i]]; 
+      current = current[split[i]];
+      if(angular.isArray(current) && current.length)
+        current=current[0]
     }
   }
   
@@ -1694,7 +1719,7 @@ function HeaderCellDirective($compile){
               <span ng-class="hcell.sortClass()"></span>
             </div>
           `
-          var $cellElm=angular.element(cellHTML)
+          var $cellElm=angular.element(cellHTML);
           $elm.append($cellElm);
           var label = $elm.find('.dt-header-cell-label');
 
@@ -1707,7 +1732,7 @@ function HeaderCellDirective($compile){
           } else {
             label.html("{{ hcell.column.name }}");
           }
-          $compile($cellElm)($scope);
+          $compile($elm.children())($scope);
         }
       }
     }
